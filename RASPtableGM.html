@@ -1,0 +1,301 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+   "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+	RASPtableGM
+	paul.scorer01_at_gmail.com
+
+	Features:
+	* Autosize Selectors and Image for display
+	* Shift-Scroll Wheel adjusts Opacity of Overlay
+	* Normal Google Maps Controls (Dbl-L-Click, Drag, Scroll Wheel)
+	* Single L-Click for Forwards within a day
+	* R-Click or Long-Left-Click gives InfoWindow @ Location with Value for time or whole day, SkewT or X-section (for wave plots)
+	* Loads image for next time on Day/Param selection
+	* Soundings indicated by Clickable Markers
+	* Archives
+	* Auto select times for STD / DST
+	* NB: M$ Windows users must ensure TimeZone and "Adjust clock for Daylight Saving" is set in Control Panel->Date & Time
+-->
+
+<html>
+<head>
+	<title>Météo-ParaPit</title>
+	<meta http-equiv="Expires" Content="-1">
+	<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+	<meta http-equiv="Content-Script-Type" content="text/javascript">
+
+
+	<script type= "text/javascript">
+		// CHANGE THESE FOR YOUR SITE
+		var Server = "http://rasp.inn.leedsmet.ac.uk/";
+		var SAVE_DAYS = 7;	// Number of days of saved wrfout files (inc Today!)
+					// MUST aggree with LSAVE_DAYS in rasp.run.parameters.REGIONXYZ
+
+		// Put your times below for January under "STD" and for the "other" time standard under "DST"
+		// These are probably the wrong way round for the Southern Hemisphere :-)
+		var tzArray = ["STD", "DST"];
+		tzArray["STD"] = ["0600", "0700", "0800", "0900", "1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800" ];
+		tzArray["DST"] = ["0700", "0800", "0900", "1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900" ];
+
+		// Placeholder - I don't have windowed runs
+		// var w2times = ["0900", "1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800"];
+
+		/* Change the size of the Plot Title
+		 * Maximum recommended value is 1.95
+		 * Minimum is 0 (No Title)
+		 */
+		var TitleScale = 1.0;	// Default
+	</script>
+
+	<!-- BUT *DON'T* CHANGE THESE UNLESS YOU KNOW WHAT YOU'RE DOING :-) -->
+
+	<!-- NOTE: Order is important here! -->
+	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?libraries=geometry"></script>
+	<script type="text/javascript" src="paramList.js"></script>
+	<script type="text/javascript" src="corners.js"></script>
+	<script type="text/javascript" src="soundings.js"></script>
+	<script type="text/javascript" src="TurnPts.js"></script>
+	<script type="text/javascript" src="RASPtableGM.js"></script>
+	<script type="text/javascript" src="ExtDraggableObject.js"></script>
+
+
+	<style type="text/css">
+		textarea {background-color: #ffffff;
+		font-family: verdana,arial,helvetica;
+		font-size: 8pt}
+
+		.optionBoldBlue {
+			font-weight: bold;
+			color: blue;
+		}
+		.optionBoldRed {
+			font-weight: bold;
+			color: red;
+		}
+	</style>
+
+	<style type="text/css">
+	  html { height: 100% }
+	  body { height: 100%; margin: 0px; padding: 0px }
+	</style>
+</head>
+<body>
+	<noscript>
+		<h1 align=center> <font color=red>This page requires JavaScript to be enabled</font></h1>
+	</noscript>
+	<table> <!-- Outermost Table - 1 Row; 2 elements: Form + Image -->
+		<tr>
+			<td class="gmnoprint" valign="top">	<!-- All the Selection Boxes -->
+				<div id="selectorDiv">
+					<table id="selectors" border=1 cellspacing="0" cellpadding="0">
+						<tr> <!-- Row 0 -->
+							<td>	<!-- Day -->
+								<select title="Select Day" id="Day" size="8">
+									<option>Wednesday 18 Jun</option>
+								</select>
+							</td>
+							<td>
+								<select size=8 title="Select Time" id="Time">
+									<option>0700</option>
+								</select>
+							</td>
+						</tr>	<!-- End Row 0 -->
+						<tr>	<!-- Row 1 -->
+							<td colspan = 2 align="center">
+								<big><b>Archive</b></big>
+							</td>
+						</tr>	<!-- End Row 1 -->
+						<tr>	<!-- Row 2  -->
+							<td colspan=2 align="center">
+								<select title="Select Day" id="archiveDay">
+									<option value="nope1">Day</option>
+									<option value="01">01</option>
+									<option value="02">02</option>
+									<option value="03">03</option>
+									<option value="04">04</option>
+									<option value="05">05</option>
+									<option value="06">06</option>
+									<option value="07">07</option>
+									<option value="08">08</option>
+									<option value="09">09</option>
+									<option value="10">10</option>
+									<option value="11">11</option>
+									<option value="12">12</option>
+									<option value="13">13</option>
+									<option value="14">14</option>
+									<option value="15">15</option>
+									<option value="16">16</option>
+									<option value="17">17</option>
+									<option value="18">18</option>
+									<option value="19">19</option>
+									<option value="20">20</option>
+									<option value="21">21</option>
+									<option value="22">22</option>
+									<option value="23">23</option>
+									<option value="24">24</option>
+									<option value="25">25</option>
+									<option value="26">26</option>
+									<option value="27">27</option>
+									<option value="28">28</option>
+									<option value="29">29</option>
+									<option value="30">30</option>
+									<option value="31">31</option>
+								</select>
+								<select title="Select Month" id="archiveMonth">
+									<option value="nope1">Month</option>
+									<option value="01">Jan</option>
+									<option value="02">Feb</option>
+									<option value="03">Mar</option>
+									<option value="04">Apr</option>
+									<option value="05">May</option>
+									<option value="06">Jun</option>
+									<option value="07">Jul</option>
+									<option value="08">Aug</option>
+									<option value="09">Sep</option>
+									<option value="10">Oct</option>
+									<option value="11">Nov</option>
+									<option value="12">Dec</option>
+								</select>
+								<select title="Select Year" id="archiveYear">
+									<option value="nope1">Year</option>
+									<option value="2008">2008</option>
+								</select>
+								<button type="button" onClick="resetArchive();">Reset</button>
+							</td>
+						</tr>	<!-- End Row 2 -->
+						<tr>	<!-- Row 3 -->
+							<td colspan=2 align=center>
+								<form id="popup" action="">
+									<b>Info PopUp </b>
+									<br>
+									<input type="radio" name="info" checked value="Value">Value
+									<input type="radio" name="info" value="Day">Day
+									<input type="radio" name="info" value="SkewT">SkewT
+									<input type="radio" name="info" value="XBL">BL XSection
+								</form>
+							</td>
+						</tr>	<!-- End Row 3 -->
+						<tr>	<!-- Row 4 -->
+							<td colspan=2 align=center>
+								<button title="Switch between Full and Reduced parameter sets" id="paramSet">Press for Full Parameter Set</button>
+							</td>
+						</tr>	<!-- End Row 4 -->
+						<tr>	<!-- Row 5 -->
+							<td colspan=2 id="paramSelector">	<!-- Parameter -->
+								<select title="Select Parameter" id="Param" size="13" >
+									<option style="color: red;" value="nope1">- - - THERMAL PARAMETERS - - -</option>
+									<!-- Filled in by script -->
+								</select>
+							</td>
+						</tr>   <!-- End Row 5 -->
+						<tr>	<!-- Row 6 -->
+							<td colspan = 2 >
+								<textarea id="desc" rows="6" cols="45">Parameter Description filled in by javascript</textarea>
+							</td>
+						</tr>	<!-- End Row 6 -->
+						<tr>    <!-- Row 7 -->
+							<td title="Was there a problem with a run?" colspan = 2>
+								<div align = center>
+									<button id="statusButton" onClick="popup( Server + '/cgi-bin/statusChk.cgi', 'Status Report', 600, 650);">Status Report</button>
+								</div>
+							</td>
+						</tr>	<!-- End Row 7 -->
+						<tr>    <!-- Row 8 -->
+							<td align=center colspan=2 title="URL of this exact Page" id="Url">
+								<div id="myUrl" align = center>
+									<!-- Filled in by javascript -->
+								</div>
+							</td>
+						</tr>	 <!-- End Row 8 -->
+						<tr>     <!-- Row 9 -->
+							<td title="Specify the Task" colspan=2 >
+								<div align = center>
+									<button onclick="getTask();"> Specify Task </button>
+								</div>
+							</td>
+						</tr>   <!-- End Row 9 -->
+						<tr>    <!-- Row 10 -->
+							<td colspan=2>
+								<div align = center>
+									<button onclick="selGlider();">Select Glider</button>
+								</div>
+							</td>
+						</tr>   <!-- End Row 10 -->
+						<tr>    <!-- Row 11 -->
+							<td title="Set Task" colspan=2 >
+								<div align = center>
+									<button id="trkavgpopup" onclick="TrackAvg();" disabled="disabled" > Track Average PopUp </button>
+								</div>
+							</td>
+						</tr>   <!-- End Row 11 -->
+						<tr>	<!-- Row 12 -->
+							<td colspan=2 align=center>
+								<form id="airspace" action="">
+									<b>AirSpace</b>
+									<input onClick="doAirspace();" name="air" type="checkbox" value="A">A
+									<input onClick="doAirspace();" name="air" type="checkbox" value="C">C
+									<input onClick="doAirspace();" name="air" type="checkbox" value="D">D
+									<input onClick="doAirspace();" name="air" type="checkbox" value="E">E
+									<input onClick="doAirspace();" name="air" type="checkbox" value="G">G
+									<input onClick="doAirspace();" name="air" type="checkbox" value="X">X
+								</form>
+							</td>
+						</tr>	<!-- End Row 12 -->
+						<tr>	<!-- Row 13 -->
+							<td title="User Guide" colspan=2 >
+								<div align = center>
+									<button onClick="return popup('http://rasp.inn.leedsmet.ac.uk/DOCS/RASPtableGMintro.html', 'User Guide', 550, 270)">User Guide</button>
+								</div>
+							</td>
+						</tr>	<!-- End Row 13 -->
+						<tr>	<!-- Row 14 -->
+							<td title="Legal Stuff" colspan=2 >
+								<div align = center>
+									<button onClick="return popup('DisclaimerNew.html', 'Disclaimer', 550, 270)">Disclaimer</button>
+								</div>
+							</td>
+						</tr>	<!-- End Row 14 -->
+					</table>
+				</div> <!-- End selectors div -->
+			</td>	<!-- End Selection Boxes -->
+			<td id="imgdata" valign="top"> <!-- Images go here -->
+				<div id="imgDiv">
+					<table border="0" cellspacing="0" cellpadding="0">
+						<tr>
+							<td>
+								<div id="topDiv" >
+								<div id="topTitle" >
+									<img id="theTitle" src="" alt="The Title">
+								</div>
+								</div>
+							</td>
+							<td/> <!-- Dummy Cell -->
+						</tr>
+						<tr>
+							<td>
+								<div id="zoomBox"> </div>
+							</td>
+							<td>
+								<div id="sideScale">
+									<img id="theSideScale" src="" alt="Side Scale">
+								</div>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<div id="botScale">
+									<img id="theScale" alt="Bottom Scale" src="">
+								</div>
+							</td>
+							<td/> <!-- Dummy Cell -->
+						</tr>
+					</table>
+				</div>
+			</td>
+		</tr>
+	</table>
+	<!-- Finally, kick the javascript into action -->
+	<script type="text/javascript"> initIt(); </script>
+</body>
+</html>

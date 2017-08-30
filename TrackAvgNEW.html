@@ -1,0 +1,884 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=windows-1252">
+<meta HTTP-EQUIV="Expires" Content="-1">
+<script src="TurnPts.js"></script>
+<script src="TPmap.js"></script>
+<script src="latlon2ij.js"></script>
+<SCRIPT type=text/javascript>
+
+/** Aug 27 2008 Fix Thermal Sink Parameter 
+	* Caused much nonsense, e.g. -ve GndSpd!
+	*/
+
+function writeit(text,id)
+{
+	if (document.getElementById)
+	{
+		x = document.getElementById(id);
+		x.innerHTML = '';
+		x.innerHTML = text;
+	}
+	else if (document.all)
+	{
+		x = document.all[id];
+		x.innerHTML = text;
+	}
+	else if (document.layers)
+	{
+		x = document.layers[id];
+		text2 = '<P CLASS="testclass">' + text + '</P>';
+		x.document.open();
+		x.document.write(text2);
+		x.document.close();
+	}
+}
+
+
+
+
+var uurl;
+
+
+// add indexOf function 
+
+if (!Array.prototype.indexOf) {
+	Array.prototype.indexOf = function(val, fromIndex) {
+		if (typeof(fromIndex) != 'number') fromIndex = 0;
+		for (var index = fromIndex,len = this.length; index < len; index++)
+			if (this[index] == val) return index;
+		return -1;
+	}
+}
+
+
+
+
+var radian = 180/Math.PI;
+var a = 6378.14;
+var f = 1/298.257;
+var e = 0.08181922;
+var angsgn = " ";
+
+function initDay()
+{
+		/**********************/
+    /* Build the Day Menu */
+    /**********************/
+    var Now = new Date().getTime(); // Time now - in milliSec(!)
+    var mS_Day = 24 * 60 * 60 * 1000; // mS in a day
+    var T = new Date();     // Instantiate a Date object
+    var dayName   = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    var monthName = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+		var day = document.forms[0].selday1;  // save typing
+
+    T.setTime(Now);         // Today
+    day.options[1] = new Option(dayName[T.getDay()] + ' ' + T.getDate() + ' ' + monthName[T.getMonth()] + " - Today", dayName[T.getDay()]);
+    day.options[2] = new Option('Today - Latest Data', dayName[T.getDay()]);
+    T.setTime(Now + mS_Day);  // Tomorrow
+    day.options[3] = new Option(dayName[T.getDay()] + ' ' + T.getDate() + ' ' + monthName[T.getMonth()], dayName[T.getDay()]);
+    T.setTime(Now + 2 * mS_Day);
+    day.options[4] = new Option(dayName[T.getDay()] + ' ' + T.getDate() + ' ' + monthName[T.getMonth()], dayName[T.getDay()]);
+    T.setTime(Now + 3 * mS_Day);
+    day.options[5] = new Option(dayName[T.getDay()] + ' ' + T.getDate() + ' ' + monthName[T.getMonth()], dayName[T.getDay()]);
+    T.setTime(Now + 4 * mS_Day);
+    day.options[6] = new Option(dayName[T.getDay()] + ' ' + T.getDate() + ' ' + monthName[T.getMonth()], dayName[T.getDay()]);
+    T.setTime(Now + 5 * mS_Day);
+    day.options[7] = new Option(dayName[T.getDay()] + ' ' + T.getDate() + ' ' + monthName[T.getMonth()], dayName[T.getDay()]);
+    T.setTime(Now + 6 * mS_Day);
+    day.options[8] = new Option(dayName[T.getDay()] + ' ' + T.getDate() + ' ' + monthName[T.getMonth()], dayName[T.getDay()]);
+		day.options[1].selected = true;
+}
+
+
+
+// reduce the degrees,minutes,seconds to radians
+function  combine(angsgn,angd,angm,angs) {
+	angsgn = angsgn.toUpperCase() 
+	if (angsgn == "N" || angsgn == "E") {s = 1};
+	if (angsgn == "S" || angsgn == "W") {s = -1};
+	angle =s*((angd)+(angm)/60 + (angs)/3600)/radian;
+	return angle;
+}
+
+// calculate the distance between two coordinates
+function calcDistance(lat1,long1,lat2,long2) {
+	 F = (lat1+lat2)/2;
+	G = (lat1-lat2)/2;
+	lambda = (long1-long2)/2;
+	with(Math) {
+	 S = pow(sin(G)*cos(lambda),2)+pow(cos(F)*sin(lambda),2);
+	  C = pow(cos(G)*cos(lambda),2)+pow(sin(F)*sin(lambda),2);
+	 omega = atan(sqrt(S/C));
+	 R = sqrt(S*C)/omega;
+	 D = 2*omega*a;
+	 H1 =(3*R-1)/2/C;
+	 H2 =(3*R+1)/2/S;
+	s = D*(1+f*H1*pow(sin(F)*cos(G),2)-f*H2*pow(cos(F)*sin(G),2));
+		}
+	return s;
+}
+
+
+// Calculate the three distances
+function calcAll()
+{
+	var cDate=(document.getElementById)? document.getElementById("dynstuff") : document.all.dynstuff;
+	var cTask=(document.getElementById)? document.getElementById("dynstuff") : document.all.dynstuff;
+
+
+	//archive & - for yr
+	if (document.forms['tper'].selday1.value=="x" && document.forms['tper'].selyr.value=="0") {
+		alert("Archive selected - enter archive date");
+		return;
+	}
+
+	var iframeobj=document.getElementById? document.getElementById("dynstuff") : document.all.dynstuff;
+	// iframeobj.src="";
+
+	writeit("",'urll');
+
+	writeit("",'tpzz');
+
+	var t1v=document.forms['tper'].tp1.value.toUpperCase();
+	var t2v=document.forms['tper'].tp2.value.toUpperCase();
+	var t3v=document.forms['tper'].tp3.value.toUpperCase();
+	var t4v=document.forms['tper'].tp4.value.toUpperCase();
+	var t5v=document.forms['tper'].tp5.value.toUpperCase();
+	var t6v=document.forms['tper'].tp6.value.toUpperCase();
+
+
+
+	if ((t1v=="" && t2v=="") || (t1v.length!=3 || t2v.length!=3) || (t1v==t2v)) {
+		alert("Trigraph input error!");
+		return;
+	}
+
+	var nTPs=2;
+
+	switch (true){
+	case ((t3v!="" && t3v.length!=3) || (t4v!="" && t4v.length!=3) || (t5v!="" && t5v.length!=3)|| (t6v!="" && t6v.length!=3)):
+		alert("Trigraph length error!");
+		return;
+	case ((t1v==t2v) || (t3v!="" && t3v==t2v) || (t4v!="" && t3v==t4v) || (t5v!="" && t4v==t5v) || (t6v!="" && t5v==t6v)):
+		alert("Trigraph duplicate error!");
+		return;
+	case ( (t4v!="" && (t3v=="" )) || (t5v!="" && (t4v==""  ||t3v=="" )) || (t6v!="" && (t5v==""  ||t4v==""  || t3v==""  ))):
+		alert("Trigraph input error!");
+		return;
+	case (t3v!="" && t4v!="" && t5v!="" && t6v!=""):
+		nTPs=6;
+		break;
+	case (t3v!="" && t4v!="" && t5v!=""):
+		nTPs=5;
+		break;
+	case (t3v!="" && t4v!=""):
+		nTPs=4;
+		break;
+	case (t3v!="" && t4v==""):
+		nTPs=3;
+		break;
+	default:
+		//alert("Trigraph check error!");
+} 
+
+
+
+//check for valid tp
+
+
+switch (true){
+	case ((t1v!="") && (tpn.indexOf(t1v)==-1)):
+		alert("TP1 not found");
+		return;
+	case ((t2v!="") && (tpn.indexOf(t2v)==-1)):
+		alert("TP2 not found");
+		return;
+	case ((t3v!="") && (tpn.indexOf(t3v)==-1)):
+		alert("TP3 not found");
+		return;
+	case ((t4v!="") && (tpn.indexOf(t4v)==-1)):
+		alert("TP4 not found");
+		return;
+	case ((t5v!="") && (tpn.indexOf(t5v)==-1)):
+		alert("TP5 not found");
+		return;
+	case ((t6v!="") && (tpn.indexOf(t6v)==-1)):
+		alert("TP6 not found");
+		return;
+	default:
+}
+
+
+var TParr = new Array();
+TParr[0] = t1v;
+TParr[1] = t2v;
+if(t3v != "") TParr[2] = t3v;
+if(t4v != "") TParr[3] = t4v;
+if(t5v != "") TParr[4] = t5v;
+if(t6v != "") TParr[5] = t6v;
+
+
+
+
+var a1= latlo[tpn.indexOf(t1v)];  //get the corresponding latlo from the TP
+var a2= latlo[tpn.indexOf(t2v)];
+var a3= (t3v!="")? latlo[tpn.indexOf(t3v)]: 0;
+var a4= (t4v!="")? latlo[tpn.indexOf(t4v)]: 0;
+var a5= (t5v!="")? latlo[tpn.indexOf(t5v)]: 0;
+var a6= (t6v!="")? latlo[tpn.indexOf(t6v)]: 0;
+
+       
+var tpd1= tpdesc[tpn.indexOf(t1v)];  //get the corresponding TP description
+var tpd2= tpdesc[tpn.indexOf(t2v)];
+var tpd3= (t3v!="")? tpdesc[tpn.indexOf(t3v)] :0;
+var tpd4= (t4v!="")? tpdesc[tpn.indexOf(t4v)] :0;
+var tpd5= (t5v!="")? tpdesc[tpn.indexOf(t5v)] :0;
+var tpd6= (t6v!="")? tpdesc[tpn.indexOf(t6v)] :0;
+
+
+var vt1=a1.indexOf(",");
+var vt2=a2.indexOf(",");
+
+var vt3=(t3v!="")? a3.indexOf(",") :0;
+var vt4=(t4v!="")? a4.indexOf(",") :0;
+var vt5=(t5v!="")? a5.indexOf(",") :0;
+var vt6=(t6v!="")? a6.indexOf(",") :0;
+
+
+var lat1=a1.substring(0,vt1-1);
+var lon1=a1.substring(vt1+1);
+
+var lat2=a2.substring(0,vt2-1);
+var lon2=a2.substring(vt2+1);
+
+var lat3=(t3v!="")? a3.substring(0,vt3-1) :0;
+var lon3=(t3v!="")? a3.substring(vt3+1) :0;
+
+var lat4=(t4v!="")? a4.substring(0,vt4-1) :0;
+var lon4=(t4v!="")? a4.substring(vt4+1) :0;
+
+var lat5=(t5v!="")? a5.substring(0,vt5-1) :0;
+var lon5=(t5v!="")? a5.substring(vt5+1) :0;
+
+var lat6=(t6v!="")? a6.substring(0,vt6-1) :0;
+var lon6=(t6v!="")? a6.substring(vt6+1) :0;
+
+var s12,s23,s34,s45;
+
+
+var lt1=(lat1/radian);
+var lt2=(lat2/radian);
+var lt3=(t3v!="")? (lat3/radian) :0;
+var lt4=(t4v!="")? (lat4/radian) :0;
+var lt5=(t5v!="")? (lat5/radian) :0;
+var lt6=(t6v!="")? (lat6/radian) :0;
+
+
+
+var lg1=(lon1/radian);
+var lg2=(lon2/radian);
+var lg3=(t3v!="")? (lon3/radian) :0;
+var lg4=(t4v!="")? (lon4/radian) :0;
+var lg5=(t5v!="")? (lon5/radian) :0;
+var lg6=(t6v!="")? (lon6/radian) :0;
+
+//alert("lt1= " + lt1+ "\n"+"lt2= "+lt2 + "\n"+"lt3= " + lt3+ "\n"+"lg1= " + lg1+ "\n"+"lg2= "+lg2 + "\n"+"lg3= " + lg3);
+
+
+
+// calculate the distances and put them in the proper text boxes
+
+ var sd= calcDistance(lt1,lg1,lt2,lg2);
+
+var tprs;
+
+switch (nTPs) {
+	case 2:
+		latlons=a1+','+a2;
+		tprs=tpd1+' - '+tpd2;
+		break;
+	case 3:
+		s23 = calcDistance(lt2,lg2,lt3,lg3);
+		sd=sd+s23;
+		latlons=a1+','+a2+','+a3;
+		tprs=tpd1+' - '+tpd2+' - '+tpd3;
+		break;
+	case 4:
+		 s23= calcDistance(lt2,lg2,lt3,lg3);
+		 s34= calcDistance(lt3,lg3,lt4,lg4);
+		 sd=sd+s23+s34;
+		 latlons=a1+','+a2+','+a3+','+a4;
+		 tprs=tpd1+' - '+tpd2+' - '+tpd3+' - '+tpd4;
+		 break;
+	case 5:
+	 s23= calcDistance(lt2,lg2,lt3,lg3);
+	 s34= calcDistance(lt3,lg3,lt4,lg4);
+	 s45=calcDistance(lt4,lg4,lt5,lg5);
+	 sd=sd+s23+s34+s45;
+	 latlons=a1+','+a2+','+a3+','+a4+','+a5;
+	 tprs=tpd1+' - '+tpd2+' - '+tpd3+' - '+tpd4+' - '+tpd5;
+	 break;
+	case 6:
+	 s23= calcDistance(lt2,lg2,lt3,lg3);
+   s34= calcDistance(lt3,lg3,lt4,lg4);
+	 s45=calcDistance(lt4,lg4,lt5,lg5);
+ 	 s56=calcDistance(lt5,lg5,lt6,lg6);
+	 sd=sd+s23+s34+s45+s56;
+	 latlons=a1+','+a2+','+a3+','+a4+','+a5+','+a6;
+	 tprs=tpd1+' - '+tpd2+' - '+tpd3+' - '+tpd4+' - '+tpd5+' - '+tpd6;
+	 break;
+	default:
+		alert("Distance calc error!");
+}
+
+var userv='http://rasp.inn.leedsmet.ac.uk/cgi-bin/get_rasptrackavgNEW.cgi?';
+
+if (document.forms['tper'].selday1.options.selectedIndex==0)
+{
+	var uyri=document.forms['tper'].selyr.options.selectedIndex;
+	var uyr=document.forms['tper'].selyr.options[uyri].text;
+
+	var umoni=document.forms['tper'].selmon.options.selectedIndex;
+	var umon=document.forms['tper'].selmon.options[umoni].value;
+
+	var udayi=document.forms['tper'].seldaya.options.selectedIndex;
+	var uday=document.forms['tper'].seldaya.options[udayi].value;
+
+	var zday=uyr+'-'+umon+'-'+uday;
+
+} else{
+	var zday=0;
+}
+
+
+var utimei=document.forms['tper'].seltime.options.selectedIndex;
+var utime=document.forms['tper'].seltime.options[utimei].value;
+
+var upoli=document.forms['tper'].selglid.options.selectedIndex;
+var upol=document.forms['tper'].selglid.options[upoli].text;
+
+var uwti=document.forms['tper'].selwl.options.selectedIndex;
+var uwt=document.forms['tper'].selwl.options[uwti].value;
+
+var usnki=document.forms['tper'].seltsk.options.selectedIndex;
+var usnk=document.forms['tper'].seltsk.options[usnki].value;
+
+var utmui=document.forms['tper'].seltmu.options.selectedIndex;
+var utmu=document.forms['tper'].seltmu.options[utmui].value;
+
+// OLDEST-PAULS var ureg='uk4%2b1';	// %2b == "+" so ureg == "uk4+1"
+// OLD-PAULS var ureg='uk%2b0';	
+var ureg="uk%2b"; // %2b == "+" so ureg == "uk+"
+
+
+if( document.forms['tper'].selday1.value == "x")
+	ureg = ureg + "0";
+else{
+	switch(document.forms['tper'].selday1.options.selectedIndex){
+	case 1:	 ureg = ureg + "0"; break;
+	case 2:	 ureg = "UK4";     break;
+	default: ureg = ureg + (document.forms['tper'].selday1.options.selectedIndex-2);
+	}
+}
+
+var ugrd='d2';
+
+//alert(userv+'\n'+uyr+'\n'+umon+'\n'+uday+'\n'+zday+'\n'+utime+'\n'+upol+'\n'+uwt+'\n'+usnk+'\n'+utmu+'\n'+ureg+'\n'+ugrd);
+
+var uurl=userv+'region='+ureg+'&latlons='+latlons+'&day='+zday+'&time='+utime+'%2b'+'&polar='+upol+'&wgt='+uwt+'&tsink='+usnk+'&tmult='+utmu+'&'+'&grid='+ugrd+'\r\n';
+// alert(uurl);
+
+
+//document.forms['tper'].cow.src=uurl;
+
+// DIAGNOSTIC ON FORM
+writeit(uurl,'urll');
+
+
+var tpxx=tprs+ '&nbsp; &nbsp;&nbsp;&nbsp;  d= '+sd.toFixed(1)+' km';
+writeit(tpxx,'tpzz');
+
+
+
+if (document.forms['tper'].chek.checked==true){
+	window.open(uurl,"xx","width=880,height=650,status=1,scrollbars=1,resizable=1");
+}
+else{
+	var iframeobj=(document.getElementById)? document.getElementById("dynstuff") : document.all.dynstuff;
+	// iframeobj.src=uurl;
+	dynstuff.src=uurl;
+}
+
+TPmap(TParr, ureg, zday, utime);
+
+}
+
+		
+
+
+function setD(vot)
+{
+	document.forms['tper'].focus();
+	document.forms['tper'].selday1.options.selectedIndex=0;
+	return;
+}
+
+
+
+function setD2(vot)  //if index <>0 then set daymoyr indices to 0
+{
+
+	if (document.forms['tper'].selday1.options.selectedIndex!=0) {
+		document.forms['tper'].seldaya.options.selectedIndex=0;
+		document.forms['tper'].selmon.options.selectedIndex=0;
+		document.forms['tper'].selyr.options.selectedIndex=0;
+		return;
+	}
+}
+
+
+
+
+
+
+
+function setTP1(what) // put TP name into highlighted TP box 
+{
+	//alert("setTP1");
+	var wog=document.forms['tper'].seltp.value;
+
+	if (wog=='0') {
+		document.forms['tper'].seltp.focus();
+		return;
+	}
+	document.forms['tper'].tps.options.selectedIndex=0;
+
+	//alert(wog);
+	switch (wog) {
+	case 'TP1':
+		document.forms['tper'].tp1.value=what;
+		break;
+	case 'TP2':
+		document.forms['tper'].tp2.value=what;
+		break;
+	case 'TP3':
+		document.forms['tper'].tp3.value=what;
+		break;
+	case 'TP4':
+		document.forms['tper'].tp4.value=what;
+		break;
+	case 'TP5':
+		document.forms['tper'].tp5.value=what;
+		break;
+	case 'TP6':
+		document.forms['tper'].tp6.value=what;
+		break;
+	default:
+		break;
+	}
+}
+
+
+
+
+
+
+
+function setTP2(what)  // put name from tp selector in tp box
+{
+
+	document.forms['tper'].focus();
+	var doba=document.forms['tper'].tps.options.selectedIndex;
+
+	var dob=document.forms['tper'].tps.options[doba].text;
+
+	if (dob=='-') {
+		document.forms['tper'].tps.focus();
+		return;
+	}
+	switch (what) {
+	case 'TP1':
+		document.forms['tper'].tp1.value=dob; //document.forms['tper'].tps.options[dob].text;
+		break;
+	case 'TP2':
+		document.forms['tper'].tp2.value=dob; //document.forms['tper'].tps.options[dob].text;
+		break;
+	case 'TP3':
+		document.forms['tper'].tp3.value=dob; //document.forms['tper'].tps.options[dob].text;
+		break;
+	case 'TP4':
+		document.forms['tper'].tp4.value=dob; //document.forms['tper'].tps.options[dob].text;
+		break;
+	case 'TP5':
+		document.forms['tper'].tp5.value=dob; //document.forms['tper'].tps.options[dob].text;
+		break;
+	default:
+		break;
+	}
+}
+
+
+
+
+
+
+function init()  //make sure browser supports populating select boxes
+{
+
+	var box1 = document.forms['tper'].tps;
+
+	//alert("here");
+
+	//alert(box1);
+
+	box1.options.length = 0;
+
+	for(i=0;i<latlo.length;i++)  //fill trigraph box with txt tpn & latlo values 
+	{
+		box1.options[i] = new Option(tpn[i],latlo[i]);
+	} 
+
+}
+
+
+</SCRIPT>
+
+<META content="MSHTML 6.00.6000.16414" name=GENERATOR>
+<TITLE>UK RASP TrackAverage</TITLE>
+</HEAD>
+<BODY onload=init();>
+<DIV align=left>
+	<B><FONT size=+2>UK Rasp Track Average</FONT></B>
+							<br>
+							<table border=0>
+               <tr colspan=6>
+                <td>
+									<A href= "http://www.spsys.demon.co.uk/turningpoints.htm" target=_blank>With BGA Turning Points</A>
+									<br><br>
+                  Hosted By <a href="http://leedsmet.ac.uk/inn">Innovation North, Leeds Metropolitan University</a>
+									<br>
+                  <a href="DisclaimerNew.html">Disclaimer</a>
+									<br><br>
+									Select data from drop down boxes.
+									<br>
+									TPs can be entered manually (Press 'GO' button for sample output)
+									<br><br>
+									NOTE: Do not use Archive Date for forecasts: use "Select forecast" instead 
+								<td>
+							 </tr>
+							</table>
+</DIV>
+<BR>
+
+<FORM id=1 name=tper>
+<TABLE cellSpacing=0 cellPadding=0 width="26%" bgColor=#ff8800 border=1>
+  <TBODY>
+  <TR>
+    <TD vAlign=center align=left width="6%">Select Forecast: </TD>
+    <TD vAlign=center align=left width="6%">Select dep time: </TD>
+    <TD vAlign=center align=middle width="4%">Select glider: </TD>
+    <TD vAlign=center align=middle width="4%">Select wingloading: </TD>
+    <TD vAlign=center align=middle width="6%">Select circling sink(kts): </TD>
+    <TD vAlign=center align=middle width="4%">Select thermal multiplier: </TD>
+	</TR>
+  <TR>
+    <TD vAlign=top align=middle width="4%">
+			<SELECT size="8" onchange=setD2(); name=selday1>
+			<OPTION value=x>Archive</OPTION>
+			<OPTION value=0 selected>Today</OPTION>
+			<option value=1 >12</option>
+			<OPTION value=1 >+1</OPTION>
+			<OPTION value=2 >+2</OPTION>
+			<OPTION value=3 >+3</OPTION>
+			<OPTION value=4 >+4</OPTION>
+			<OPTION value=5 >+5</OPTION>
+			<OPTION value=6 >+6</OPTION>
+			</SELECT>
+		</TD>
+    <TD vAlign=top align=middle width="4%">
+		<SELECT size="8" name=seltime> 
+		<OPTION value=0900>0900</OPTION>
+		<OPTION value=0930>0930</OPTION>
+		<OPTION value=1000>1000</OPTION>
+		<OPTION value=1030>1030</OPTION>
+		<OPTION value=1100>1100</OPTION>
+		<OPTION value=1130>1130</OPTION>
+		<OPTION value=1200 selected>1200</OPTION>
+		<OPTION value=1230>1230</OPTION>
+		<OPTION value=1300>1300</OPTION>
+		<OPTION value=1330>1330</OPTION>
+		<OPTION value=1400>1400</OPTION>
+		<OPTION value=1430>1430</OPTION>
+		<OPTION value=1500>1500</OPTION> 
+		<OPTION value=1530>1530</OPTION> 
+		<OPTION value=1600>1600</OPTION>
+		</SELECT>
+    </TD>
+    <TD vAlign=top align=middle width="4%">
+		<SELECT size=8 name=selglid> 
+		<OPTION value=0>--1-Person-Sailplanes--</OPTION>
+		<OPTION value=1-26A>1-26A</OPTION>
+		<OPTION value=1-26E>1-26E</OPTION>
+		<OPTION value=1-34>1-34</OPTION>
+		<OPTION value=1-35A>1-35A</OPTION>
+		<OPTION value=1-36_Sprite>1-36_Sprite</OPTION>
+		<OPTION value=604>604</OPTION>
+		<OPTION value=ASW-12>ASW-12</OPTION>
+		<OPTION value=ASW-15>ASW-15</OPTION>
+		<OPTION value=ASW-17>ASW-17</OPTION>
+		<OPTION value=ASW-19>ASW-19</OPTION>
+		<OPTION value=ASW-20>ASW-20</OPTION>
+		<OPTION value=ASW-24>ASW-24</OPTION>
+		<OPTION value=ASW-27_Wnglts>ASW-27_Wnglts</OPTION>
+		<OPTION value=DG-400_15m>DG-400_15m</OPTION>
+		<OPTION value=DG-400_17m>DG-400_17m</OPTION>
+		<OPTION value=DG-800_15m>DG-800_15m</OPTION>
+		<OPTION value=DG-800_18m>DG-800_18m</OPTION>
+		<OPTION value=DiscusA selected>DiscusA</OPTION>
+		<OPTION value=GenesisII>GenesisII</OPTION> 
+		<OPTION value=H-201_StdLibelle>H-201_StdLibelle</OPTION>
+		<OPTION value=H-301_Libelle>H-301_Libelle</OPTION>
+		<OPTION value=IS-29D2_Lark>IS-29D2_Lark</OPTION>
+		<OPTION value=Jantar2_SZD-42A>Jantar2_SZD-42A</OPTION>
+		<OPTION value=Ka-6CR>Ka-6CR</OPTION>
+		<OPTION value=L-33_Solo>L-33_Solo</OPTION> 
+		<OPTION value=LS-1C>LS-1C</OPTION>
+		<OPTION value=LS-3>LS-3</OPTION> 
+        	<OPTION value=LS-4a>LS-4a</OPTION>
+		<OPTION value=Nimbus2_20m>Nimbus2_20m</OPTION>
+		<OPTION value=Nimbus3_25m>Nimbus3_25m</OPTION>
+		<OPTION value=Nimbus3T>Nimbus3T</OPTION>
+		<OPTION value=Nimbus4_26m>Nimbus4_26m</OPTION>
+		<OPTION value=PIK-20B>PIK-20B</OPTION>
+		<OPTION value=PIK-20D>PIK-20D</OPTION> 
+        	<OPTION value=PIK-20E>PIK-20E</OPTION>
+		<OPTION value=PIK-30M>PIK-30M</OPTION>
+		<OPTION value=PW-5_Smyk>PW-5_Smyk</OPTION>
+		<OPTION value=RussiaAC-4_13m>RussiaAC-4_13m</OPTION>
+		<OPTION value=StdCirrus>StdCirrus</OPTION>
+		<OPTION value=SZD-55-1>SZD-55-1</OPTION>
+		<OPTION value=SZD-30>SZD-30</OPTION>
+		<OPTION value=Vega-T65A>Vega-T65A</OPTION>
+		<OPTION value=VentusA-B_17m>VentusA-B_17m</OPTION>
+		<OPTION value=VentusB_15m>VentusB_15m</OPTION>
+		<OPTION value=ZuniII>ZuniII</OPTION>
+		<OPTION value=0>--2-Person-Sailplanes--</OPTION>
+		<OPTION value=ASH-25_25m_Pil>ASH-25_25m_Pil</OPTION>
+		<OPTION value=ASH-25_25m_Pas>ASH-25_25m_Pas</OPTION>
+		<OPTION value=ASH-25M_Pil>ASH-25M_Pil</OPTION>
+		<OPTION value=ASH-25M_Pas>ASH-25M_Pas</OPTION>
+		<OPTION value=DG-500_Pil>DG-500_Pil</OPTION>
+		<OPTION value=DG-500_Pas>DG-500_Pas</OPTION>
+		<OPTION value=DG-500M_Pil>DG-500M_Pil</OPTION>
+		<OPTION value=DG-500M_Pas>DG-500M_Pas</OPTION>
+		<OPTION value=DuoDiscus_Pil>DuoDiscus_Pil</OPTION>
+		<OPTION value=DuoDiscus_Pas>DuoDiscus_Pas</OPTION>
+		<OPTION value=Grob103_TwinII_Pil>Grob103_TwinII_Pil</OPTION>
+		<OPTION value=Grob103_TwinII_Pas>Grob103_TwinII_Pas</OPTION>
+		<OPTION value=JanusB_18m_Pil>JanusB_18m_Pil</OPTION>
+		<OPTION value=JanusB_18m_Pas>JanusB_18m_Pas</OPTION>
+		<OPTION value=Nimbus3D_25m_Pil>Nimbus3D_25m_Pil</OPTION>
+		<OPTION value=Nimbus3D_25m_Pas>Nimbus3D_25m_Pas</OPTION>
+		<OPTION value=Nimbus3DM_25m_Pil>Nimbus3DM_25m_Pil</OPTION>
+		<OPTION value=Nimbus3DM_25m_Pas>Nimbus3DM_25m_Pas</OPTION>
+		<OPTION value=Nimbus4DM_26m_Pil>Nimbus4DM_26m_Pil</OPTION>
+		<OPTION value=Nimbus4DM_26m_Pas>Nimbus4DM_26m_Pas</OPTION>
+		<OPTION value=Nimbus4D_Pil>Nimbus4D_Pil</OPTION>
+		<OPTION value=Nimbus4D_Pas>Nimbus4D_Pas</OPTION>
+		<OPTION value=StemmeS10_Pil>StemmeS10_Pil</OPTION>
+		<OPTION value=StemmeS10_Pas>StemmeS10_Pas</OPTION>
+		<OPTION value=Talon>Talon</OPTION>
+		</SELECT>
+    </TD>
+    <TD vAlign=top align=middle width="4%">
+		<SELECT size=2 name=selwl> 
+      		<OPTION value=1 selected>no ballast</OPTION>
+		<OPTION value=-1>full ballast</OPTION>
+		</SELECT>
+    </TD>
+    <TD vAlign=top align=middle width="4%">
+			<SELECT size=7 name=seltsk> 
+      <OPTION value=0.5>1.00</OPTION>
+			<OPTION value=0.75>1.50</OPTION>
+			<OPTION value=0.875>1.75</OPTION>
+			<OPTION value=1.0 selected>2.00</OPTION>
+			<OPTION value=1.125>2.25</OPTION>
+			<OPTION value=1.25>2.50</OPTION>
+			<OPTION value=1.375>2.75</OPTION>
+			</SELECT>
+		</TD>
+    <TD vAlign=top align=middle width="4%">
+			<SELECT size=5 name=seltmu> 
+			<OPTION value=0.5>0.5</OPTION>
+			<OPTION value=1 selected>1.0</OPTION> 
+			<OPTION value=1.5>1.5</OPTION>
+			<OPTION value=2.0>2.0</OPTION>
+			<OPTION value=2.5>2.5</OPTION>
+			</SELECT>
+		</TD>
+	</TR>
+  <TR>
+    <TD vAlign=bottom align=middle colSpan=3>Archive date</TD></TR>
+  <TR>
+    <TD vAlign=bottom align=middle width="4%">Day </TD>
+    <TD vAlign=bottom align=middle width="4%">Month </TD>
+    <TD vAlign=bottom align=middle width="4%">Year </TD></TR>
+  <TR>
+    <TD vAlign=bottom align=middle width="4%">
+			<SELECT onchange=setD(); name=seldaya>
+			<OPTION value=0 selected>-</OPTION>
+			<OPTION value=01>1</OPTION>
+			<OPTION value=02>2</OPTION>
+			<OPTION value=03>3</OPTION>
+			<OPTION value=04>4</OPTION>
+			<OPTION value=05>5</OPTION>
+			<OPTION value=06>6</OPTION>
+			<OPTION value=07>7</OPTION>
+			<OPTION value=08>8</OPTION>
+			<OPTION value=09>9</OPTION>
+			<OPTION value=10>10</OPTION>
+			<OPTION value=11>11</OPTION>
+			<OPTION value=12>12</OPTION>
+			<OPTION value=13>13</OPTION>
+			<OPTION value=14>14</OPTION>
+			<OPTION value=15>15</OPTION>
+			<OPTION value=16>16</OPTION>
+			<OPTION value=17>17</OPTION>
+			<OPTION value=18>18</OPTION>
+			<OPTION value=19>19</OPTION>
+			<OPTION value=20>20</OPTION>
+			<OPTION value=21>21</OPTION>
+			<OPTION value=22>22</OPTION>
+			<OPTION value=23>23</OPTION>
+			<OPTION value=24>24</OPTION>
+			<OPTION value=25>25</OPTION>
+			<OPTION value=26>26</OPTION>
+			<OPTION value=27>27</OPTION>
+			<OPTION value=28>28</OPTION>
+			<OPTION value=29>29</OPTION>
+			<OPTION value=30>30</OPTION>
+			<OPTION value=31>31</OPTION>
+			</SELECT>
+		</TD>
+    <TD vAlign=bottom align=middle width="4%">
+		<SELECT onchange=setTP2(); name=selmon>
+		<OPTION value=0 selected>-</OPTION>
+		<OPTION value=01>Jan</OPTION>
+		<OPTION value=02>Feb</OPTION>
+		<OPTION value=03>Mar</OPTION>
+		<OPTION value=04>Apr</OPTION>
+		<OPTION value=05>May</OPTION>
+		<OPTION value=06>Jun</OPTION>
+		<OPTION value=07>Jul</OPTION>
+		<OPTION value=08>Aug</OPTION>
+		<OPTION value=09>Sep</OPTION>
+		<OPTION value=10>Oct</OPTION>
+		<OPTION value=11>Nov</OPTION>
+		<OPTION value=12>Dec</OPTION>
+		</SELECT>
+		</TD>
+    <TD vAlign=bottom align=middle width="4%">
+		<SELECT onchange=setTP2(); name=selyr>
+		<OPTION value=0 >-</OPTION>
+		<OPTION value=3 selected>2010</OPTION>
+		<OPTION value=4>2011</OPTION>
+		</SELECT> 
+		</TD>
+	</TR>
+	</TBODY>
+	</TABLE>
+	<BR>
+	<TABLE cellSpacing=0 cellPadding=0 width="20%" bgColor=#ff8800 border=1>
+  <TBODY>
+  <TR>
+    <TD vAlign=top align=left width="6%">Select TP #: </TD>
+    <TD vAlign=top align=left width="6%">Select Trigraph: </TD>
+    <TD vAlign=bottom align=middle width="4%">TP1: </TD>
+    <TD vAlign=bottom align=middle width="4%">TP2: </TD>
+    <TD vAlign=bottom align=middle width="4%">TP3: </TD>
+    <TD vAlign=bottom align=middle width="4%">TP4: </TD>
+    <TD vAlign=bottom align=middle width="4%">TP5: </TD>
+    <TD vAlign=bottom align=middle width="4%">TP6: </TD>
+    <TD vAlign=top align=middle width="6%">
+		<INPUT id=chek type=checkbox>NEW&nbsp;WINDOW</TD><!-- <TD vAlign="bottom" align="center" width="6%">      Distance (km):     </TD> --></TR>
+  <TR>
+    <TD vAlign=center align=middle width="4%">
+		<SELECT onchange=setTP2(this.options[this.selectedIndex].text) name=seltp> 
+       <OPTION value=0 selected>-</OPTION> <OPTION value=TP1>TP1</OPTION> 
+       <OPTION value=TP2>TP2</OPTION>
+			 <OPTION value=TP3>TP3</OPTION>
+			 <OPTION value=TP4>TP4</OPTION>
+			 <OPTION value=TP5>TP5</OPTION>
+			 <OPTION value=TP6>TP6</OPTION>
+		</SELECT> 
+    <TD vAlign=center align=middle width="4%">
+		<SELECT onchange=setTP1(this.options[this.selectedIndex].text) name=tps>
+			<OPTION value=0 selected>TP LOAD</OPTION>
+		</SELECT> </TD></TD>
+    <TD vAlign=center align=middle width="4%">
+			<INPUT style="TEXT-TRANSFORM: uppercase" maxLength=3 size=3 value=PAR name=tp1> 
+    </TD>
+    <TD vAlign=center align=middle width="4%">
+			<INPUT style="TEXT-TRANSFORM: uppercase" maxLength=3 size=3 value=MEM name=tp2> 
+    </TD>
+    <TD vAlign=center align=middle width="4%">
+			<INPUT style="TEXT-TRANSFORM: uppercase" maxLength=3 size=3 value=PAR name=tp3> 
+    </TD>
+    <TD vAlign=center align=middle width="4%">
+			<INPUT style="TEXT-TRANSFORM: uppercase" maxLength=3 size=3 name=tp4>
+		</TD>
+    <TD vAlign=center align=middle>
+			<INPUT style="TEXT-TRANSFORM: uppercase" maxLength=3 size=3 name=tp5>
+		</TD>
+    <TD vAlign=center align=middle>
+			<INPUT style="TEXT-TRANSFORM: uppercase" maxLength=3 size=3 name=tp6>
+		</TD>
+    <TD vAlign=center align=middle>
+			<INPUT style="TEXT-TRANSFORM: uppercase" onclick=calcAll(); type=button size=8 value=Go name=go>
+		</TD>
+		</TR>
+		</TBODY>
+		</TABLE>
+
+		<br>
+		<DIV class=testclass id=tpzz> </DIV>
+		<DIV class=testclass id=urll> </DIV>
+		<DIV id=stuff> </DIV>
+		<H1>   </h1>
+		<br>
+	</FORM>
+	<DIV id=Mapstuff> </DIV>
+
+		<SCRIPT type=text/javascript>
+
+			// Maps = document.createElement("div");
+			// MapPlace.style.position = "relative";
+			document.getElementById("Mapstuff").style.position = "static";			
+			
+			// stuff = document.createElement("div");
+			// stuff.style.position = "relative";
+			// document.appendChild(stuff);			
+			
+			// var iframeprops='align=left width="850" height="630" marginwidth="0" marginheight="0" hspace="4" vspace="0" frameborder="0" scrolling="no"';
+			dynstuff = document.createElement("iframe");
+			dynstuff.style.position = "static";
+			dynstuff.style.align = "left";
+			dynstuff.style.width = '1056'; 
+			dynstuff.style.height = '630px'; 
+			dynstuff.style.marginwidth = '0'; 
+			dynstuff.style.marginheight = '0'; 
+			dynstuff.style.hspace = '4'; 
+			dynstuff.style.vspace = '0'; 
+			dynstuff.style.frameborder = '0'; 
+			dynstuff.style.scrolling = 'no' ;
+			document.getElementById("stuff").appendChild(dynstuff);
+			// document.write('<div><iframe id="dynstuff" ' + iframeprops + ' > </iframe> </div>')
+
+			initDay();
+
+
+		</SCRIPT>
+	</BODY>
+	</HTML>

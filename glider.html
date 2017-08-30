@@ -1,0 +1,178 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+	<HEAD>
+	<META http-equiv=Content-Type content="text/html">
+	<meta HTTP-EQUIV="Expires" Content="-1">
+	<TITLE>Select Glider</TITLE>
+	<SCRIPT type=text/javascript>
+
+	function setVals()
+	{
+		window.opener.glider  = document.getElementById('selglid').value;
+		window.opener.tsink   = document.getElementById('selsink').value;
+		window.opener.ballast = document.getElementById('selballast').value;
+		window.opener.tmult   = document.getElementById('selmult').value;
+		window.close();
+	}
+
+	function init()
+	{
+		var i;
+
+		for(i = 0; i < document.getElementById("selglid").options.length; i++){
+			if(document.getElementById("selglid").options[i].value == window.opener.glider){
+				document.getElementById("selglid").options[i].selected = true;
+			}
+		}
+		for(i = 0; i < document.getElementById("selballast").options.length; i++){
+			if(document.getElementById("selballast").options[i].value == window.opener.ballast){
+				document.getElementById("selballast").options[i].selected = true;
+			}
+		}
+		for(i = 0; i < document.getElementById("selsink").options.length; i++){
+			if(document.getElementById("selsink").options[i].value == window.opener.tsink){
+				document.getElementById("selsink").options[i].selected = true;
+			}
+		}
+		for(i = 0; i < document.getElementById("selmult").options.length; i++){
+			if(document.getElementById("selmult").options[i].value == window.opener.tmult){
+				document.getElementById("selmult").options[i].selected = true;
+			}
+		}
+	}
+
+	</SCRIPT>
+
+</HEAD>
+
+<BODY onload="init();" >
+<H2 align=center> Select Glider </h2>
+<TABLE cellSpacing=0 cellPadding=0 width="26%" bgcolor=#888888 border=1>
+  <TBODY>
+  <TR>
+    <TD vAlign=center align=middle width="4%">Glider: </TD>
+    <TD vAlign=center align=middle width="4%">Wingloading: </TD>
+    <TD vAlign=center align=middle width="6%">Circling sink(kts): </TD>
+    <TD vAlign=center align=middle width="4%">Thermal multiplier: </TD>
+  </TR>
+  <TR>
+    <TD vAlign=top align=middle width="4%">
+      <SELECT size=8 id=selglid> 
+      <OPTION value=0>--1-Person-Sailplanes--</OPTION>
+      <OPTION value=1-26A>1-26A</OPTION>
+      <OPTION value=1-26E>1-26E</OPTION>
+      <OPTION value=1-34>1-34</OPTION>
+      <OPTION value=1-35A>1-35A</OPTION>
+      <OPTION value=1-36_Sprite>1-36_Sprite</OPTION>
+      <OPTION value=604>604</OPTION>
+      <OPTION value=ASW-12>ASW-12</OPTION>
+      <OPTION value=ASW-15>ASW-15</OPTION>
+      <OPTION value=ASW-17>ASW-17</OPTION>
+      <OPTION value=ASW-19>ASW-19</OPTION>
+      <OPTION value=ASW-20>ASW-20</OPTION>
+      <OPTION value=ASW-24>ASW-24</OPTION>
+      <OPTION value=ASW-27_Wnglts>ASW-27_Wnglts</OPTION>
+      <OPTION value=DG-400_15m>DG-400_15m</OPTION>
+      <OPTION value=DG-400_17m>DG-400_17m</OPTION>
+      <OPTION value=DG-800_15m>DG-800_15m</OPTION>
+      <OPTION value=DG-800_18m>DG-800_18m</OPTION>
+      <OPTION value=DiscusA>DiscusA</OPTION>
+      <OPTION value=GenesisII>GenesisII</OPTION> 
+      <OPTION value=H-201_StdLibelle>H-201_StdLibelle</OPTION>
+      <OPTION value=H-301_Libelle>H-301_Libelle</OPTION>
+      <OPTION value=IS-29D2_Lark>IS-29D2_Lark</OPTION>
+      <OPTION value=Jantar2_SZD-42A>Jantar2_SZD-42A</OPTION>
+      <OPTION value=Ka-6CR>Ka-6CR</OPTION>
+      <OPTION value=L-33_Solo>L-33_Solo</OPTION> 
+      <OPTION value=LS-1C>LS-1C</OPTION>
+      <OPTION value=LS-3>LS-3</OPTION> 
+      <OPTION value=LS-4a>LS-4a</OPTION>
+      <OPTION value=Nimbus2_20m>Nimbus2_20m</OPTION>
+      <OPTION value=Nimbus3_25m>Nimbus3_25m</OPTION>
+      <OPTION value=Nimbus3T>Nimbus3T</OPTION>
+      <OPTION value=Nimbus4_26m>Nimbus4_26m</OPTION>
+      <OPTION value=PIK-20B>PIK-20B</OPTION>
+      <OPTION value=PIK-20D>PIK-20D</OPTION> 
+      <OPTION value=PIK-20E>PIK-20E</OPTION>
+      <OPTION value=PIK-30M>PIK-30M</OPTION>
+      <OPTION value=PW-5_Smyk>PW-5_Smyk</OPTION>
+      <OPTION value=RussiaAC-4_13m>RussiaAC-4_13m</OPTION>
+      <OPTION value=StdCirrus>StdCirrus</OPTION>
+      <OPTION value=SZD-30>SZD-30</OPTION>
+      <OPTION value=SZD-55-1>SZD-55-1</OPTION>
+      <OPTION value=Vega-T65A>Vega-T65A</OPTION>
+      <OPTION value=VentusA-B_17m>VentusA-B_17m</OPTION>
+      <OPTION value=VentusB_15m>VentusB_15m</OPTION>
+      <OPTION value=ZuniII>ZuniII</OPTION>
+      
+      <OPTION value=0>--2-Person-Sailplanes--</OPTION>
+      <OPTION value=ASH-25_25m_Pil>ASH-25_25m_Pil</OPTION>
+      <OPTION value=ASH-25_25m_Pas>ASH-25_25m_Pas</OPTION>
+      <OPTION value=ASH-25M_Pil>ASH-25M_Pil</OPTION>
+      <OPTION value=ASH-25M_Pas>ASH-25M_Pas</OPTION>
+      <OPTION value=DG-500_Pil>DG-500_Pil</OPTION>
+      <OPTION value=DG-500_Pas>DG-500_Pas</OPTION>
+      <OPTION value=DG-500M_Pil>DG-500M_Pil</OPTION>
+      <OPTION value=DG-500M_Pas>DG-500M_Pas</OPTION>
+      <OPTION value=DuoDiscus_Pil>DuoDiscus_Pil</OPTION>
+      <OPTION value=DuoDiscus_Pas>DuoDiscus_Pas</OPTION>
+      <OPTION value=Grob103_TwinII_Pil>Grob103_TwinII_Pil</OPTION>
+      <OPTION value=Grob103_TwinII_Pas>Grob103_TwinII_Pas</OPTION>
+      <OPTION value=JanusB_18m_Pil>JanusB_18m_Pil</OPTION>
+      <OPTION value=JanusB_18m_Pas>JanusB_18m_Pas</OPTION>
+      <OPTION value=Nimbus3D_25m_Pil>Nimbus3D_25m_Pil</OPTION>
+      <OPTION value=Nimbus3D_25m_Pas>Nimbus3D_25m_Pas</OPTION>
+      <OPTION value=Nimbus3DM_25m_Pil>Nimbus3DM_25m_Pil</OPTION>
+      <OPTION value=Nimbus3DM_25m_Pas>Nimbus3DM_25m_Pas</OPTION>
+      <OPTION value=Nimbus4DM_26m_Pil>Nimbus4DM_26m_Pil</OPTION>
+      <OPTION value=Nimbus4DM_26m_Pas>Nimbus4DM_26m_Pas</OPTION>
+      <OPTION value=Nimbus4D_Pil>Nimbus4D_Pil</OPTION>
+      <OPTION value=Nimbus4D_Pas>Nimbus4D_Pas</OPTION>
+      <OPTION value=StemmeS10_Pil>StemmeS10_Pil</OPTION>
+      <OPTION value=StemmeS10_Pas>StemmeS10_Pas</OPTION>
+      
+      <OPTION value=0>--Hang-Gliders--</OPTION>
+      <OPTION value=Talon>Talon</OPTION>
+      <OPTION value=Fusion>Fusion</OPTION>
+      <OPTION value=Sport2>Sport2</OPTION>
+      <OPTION value=Ultra>Ultra</OPTION>
+      <OPTION value=Eagle>Eagle</OPTION>
+      <OPTION value=Falcon>Falcon</OPTION>
+      </SELECT>
+    </TD>
+    <TD vAlign=top align=middle width="4%">
+      <SELECT size=2 id=selballast> 
+      <OPTION value=1 >no ballast</OPTION>
+      <OPTION value=-1>full ballast</OPTION>
+      </SELECT>
+    </TD>
+    <TD vAlign=top align=middle width="4%">
+      <SELECT size=7 id=selsink> 
+      <OPTION value=1.00kt>1.00</OPTION>
+      <OPTION value=1.50kt>1.50</OPTION>
+      <OPTION value=1.75kt>1.75</OPTION>
+      <OPTION value=2.00kt>2.00</OPTION>
+      <OPTION value=2.25kt>2.25</OPTION>
+      <OPTION value=2.50kt>2.50</OPTION>
+      <OPTION value=2.75kt>2.75</OPTION>
+      </SELECT>
+    </TD>
+    <TD vAlign=top align=middle width="4%">
+      <SELECT size=5 id=selmult>
+      <OPTION value=0.5>0.5</OPTION>
+      <OPTION value=1.0>1.0</OPTION>
+      <OPTION value=1.5>1.5</OPTION>
+      <OPTION value=2.0>2.0</OPTION>
+      <OPTION value=2.5>2.5</OPTION>
+      </SELECT>
+    </TD>
+    <TD>
+      <p>
+        <button type="button" style="color: red" onClick="setVals();"> Done </button>
+      </p>
+    </TD>
+  </TR>
+</TBODY>
+</TABLE>
+</BODY>
+</HTML>

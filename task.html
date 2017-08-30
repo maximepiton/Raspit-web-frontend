@@ -1,0 +1,347 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=windows-1252">
+<meta HTTP-EQUIV="Expires" Content="-1">
+<script type="text/javascript" src="TurnPts.js"></script>
+<!-- script src="latlon2ij.js"></script -->
+<!-- script type="text/javascript" src="http://maps.google.com/maps/api/js?v=3.5&sensor=false"></script -->
+<!-- script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?libraries=geometry&sensor=false"></script -->
+
+<SCRIPT type="text/javascript">
+
+function writeit(text,id)
+{
+	if (document.getElementById) {
+		x = document.getElementById(id);
+		x.innerHTML = '';
+		x.innerHTML = text;
+	}
+	else if (document.all) {
+		x = document.all[id];
+		x.innerHTML = text;
+	}
+	else if (document.layers) {
+		x = document.layers[id];
+		text2 = '<P CLASS="testclass">' + text + '</P>';
+		x.document.open();
+		x.document.write(text2);
+		x.document.close();
+	}
+}
+
+var uurl;
+
+var radian = 180/Math.PI;
+var a = 6378.14;
+var f = 1/298.257;
+var e = 0.08181922;
+
+
+// calculate the distance between two coordinates
+function calcDistance(lat1,long1,lat2,long2)
+{
+	F = (lat1+lat2)/2;
+	G = (lat1-lat2)/2;
+	lambda = (long1-long2)/2;
+	with(Math) {
+		S = pow(sin(G)*cos(lambda),2)+pow(cos(F)*sin(lambda),2);
+		C = pow(cos(G)*cos(lambda),2)+pow(sin(F)*sin(lambda),2);
+		omega = atan(sqrt(S/C));
+		R = sqrt(S*C)/omega;
+		D = 2*omega*a;
+		H1 =(3*R-1)/2/C;
+		H2 =(3*R+1)/2/S;
+		s = D*(1+f*H1*pow(sin(F)*cos(G),2)-f*H2*pow(cos(F)*sin(G),2));
+	}
+	return s;
+}
+
+function resetTask()
+{
+	document.forms['tper'].tp1.value=""; 
+	calcAll();
+}
+
+// Check TPs & Calculate the distances
+function calcAll()
+{
+	writeit("",'tpzz');
+
+	var t1v=document.forms['tper'].tp1.value.toUpperCase();
+	var t2v=document.forms['tper'].tp2.value.toUpperCase();
+	var t3v=document.forms['tper'].tp3.value.toUpperCase();
+	var t4v=document.forms['tper'].tp4.value.toUpperCase();
+	var t5v=document.forms['tper'].tp5.value.toUpperCase();
+	var t6v=document.forms['tper'].tp6.value.toUpperCase();
+ 
+	if(t1v.length  == 0){	// Clear Task if no TP1
+		window.opener.TParray.length = 0;
+		window.opener.addTask();
+		window.close();
+		return;
+	}
+
+	var nTPs;
+	var o = [t6v, t5v, t4v, t3v, t2v, t1v]; // Note Reverse order
+
+	for(var i = 0; i < o.length; i++){ // Find last non-blank TP
+		if(o[i].length){
+			nTPs =  6 - i;
+			for(var x = i + 1; x < o.length; x++){ // Check no earlier blanks
+				if(o[x] == ""){
+					alert("Missing TP" + (6 - x));
+				}
+			}
+			break;
+		}
+	}
+
+	switch(nTPs){	// Check valid TP & no adjacent duplicates
+	case 6: if( !(t6v in turnPts)) {alert("TP6 not found!");             return;} // Note fallthrough
+	        if(t6v == t5v)         {alert("TP6 is a duplicate of TP5!"); return;}
+	case 5: if( !(t5v in turnPts)) {alert("TP5 not found!");             return;}
+	        if(t5v == t4v)         {alert("TP5 is a duplicate of TP4!"); return;}
+	case 4: if( !(t4v in turnPts)) {alert("TP4 not found!");             return;}
+	        if(t4v == t3v)         {alert("TP4 is a duplicate of TP3!"); return;}
+	case 3: if( !(t3v in turnPts)) {alert("TP3 not found!");             return;}
+	        if(t3v == t2v)         {alert("TP3 is a duplicate of TP2!"); return;}
+	case 2: if( !(t2v in turnPts)) {alert("TP2 not found!");             return;}
+	        if(t2v == t1v)         {alert("TP2 is a duplicate of TP1!"); return;}
+		if( !(t1v in turnPts)) {alert("TP1 not found!");             return;}
+		else break;
+	case 1:                        {alert("Must have distinct TP1 & TP2!");
+	                                                                     return;}
+	default:                       {alert("Program error!?!?!");         return;} // Should never occur!!!
+	}
+
+	var lat1, lat2, lat3, lat4, lat5, lat6;
+	var lon1, lon2, lon3, lon4, lon5, lon6;
+	var tpd1, tpd2, tpd3, tpd4, tpd5, tpd6;
+	var a1, a2, a3, a4, a5, a6;
+	var sd = 0;
+	var tprs = "";
+	var TParr = [];
+	switch(nTPs){
+	case 6:
+		TParr.push(t6v);
+	        tprs += turnPts[t6v].desc + "\n";
+		a6   = turnPts[t6v].latlon;	// Note Fall Through
+                lat6 = a6.split(',')[0] / radian;
+	        lon6 = a6.split(',')[1] / radian;
+	case 5:
+		TParr.push(t5v);
+	        tprs = turnPts[t5v].desc + "\n" + tprs;
+		a5   = turnPts[t5v].latlon;
+                lat5 = a5.split(',')[0] / radian;
+	        lon5 = a5.split(',')[1] / radian;
+		if(lat6 != undefined) sd += calcDistance(lat6, lon6, lat5, lon5);
+	case 4:
+		TParr.push(t4v);
+	        tprs = turnPts[t4v].desc + "\n" + tprs;
+		a4   = turnPts[t4v].latlon;
+                lat4 = a4.split(',')[0] / radian;
+	        lon4 = a4.split(',')[1] / radian;
+		if(lat5 != undefined) sd += calcDistance(lat5, lon5, lat4, lon4);
+	case 3:
+		TParr.push(t3v);
+	        tprs = turnPts[t3v].desc + "\n" + tprs;
+		a3   = turnPts[t3v].latlon;
+                lat3 = a3.split(',')[0] / radian;
+	        lon3 = a3.split(',')[1] / radian;
+		if(lat4 != undefined) sd += calcDistance(lat4, lon4, lat3, lon3);
+	case 2:
+		TParr.push(t2v);
+		TParr.push(t1v);
+	        tprs = turnPts[t2v].desc + "\n" + tprs;
+	        tprs = turnPts[t1v].desc + "\n" + tprs;
+		a2   = turnPts[t2v].latlon;
+                lat2 = a2.split(',')[0] / radian;
+	        lon2 = a2.split(',')[1] / radian;
+		if(lat3 != undefined) sd += calcDistance(lat3, lon3, lat2, lon2);
+	        a1   = turnPts[t1v].latlon;
+                lat1 = a1.split(',')[0] / radian;
+	        lon1 = a1.split(',')[1] / radian;
+		sd += calcDistance(lat2, lon2, lat1, lon1);
+		break;
+	default:
+		alert("Program Error: nTPs < 2 || nTPs > 6"); return;
+	}
+	// alert("lat1= " + lat1+ "\n" +"lon1= " + lon1+ "\n" +"lat2= "+lat2 + "\n" +"lon2= "+lon2 + "\n" +"lat3= " + lat3+ "\n" +"lon3= " + lon3);
+
+/*
+	// google.maps.geometry.spherical.computeLength(Array[LatLng])
+*/
+	var tpxx = tprs + ' d = ' + sd.toFixed(1) + ' km';
+	writeit(tpxx,'tpzz');
+
+	if(confirm(tprs + '\n' + "D = " + sd.toFixed(1) + " km")){
+		window.opener.TParray.length = 0;
+		TParr.reverse();
+		for(i = 0; i < TParr.length; i++){
+			window.opener.TParray.push(TParr[i]);
+		}
+		window.opener.addTask();
+		window.close();
+	}
+}
+
+function setTP1(what) // put TP name into highlighted TP box 
+{
+	var wog=document.forms['tper'].seltp.value;
+
+	if (wog=='0') {
+		document.forms['tper'].seltp.focus();
+		return;
+	}
+	document.forms['tper'].tps.options.selectedIndex=0;
+
+	//alert(wog);
+	switch (wog) {
+	case 'TP1': document.forms['tper'].tp1.value=what; break;
+	case 'TP2': document.forms['tper'].tp2.value=what; break;
+	case 'TP3': document.forms['tper'].tp3.value=what; break;
+	case 'TP4': document.forms['tper'].tp4.value=what; break;
+	case 'TP5': document.forms['tper'].tp5.value=what; break;
+	case 'TP6': document.forms['tper'].tp6.value=what; break;
+	default:                                           break;
+	}
+}
+
+function setTP2(what)  // put name from tp selector in tp box
+{
+	document.forms['tper'].focus();
+	var doba=document.forms['tper'].tps.options.selectedIndex;
+
+	var dob=document.forms['tper'].tps.options[doba].text;
+
+	if (dob=='-') {
+		document.forms['tper'].tps.focus();
+		return;
+	}
+	switch (what) {
+	case 'TP1': document.forms['tper'].tp1.value=dob; break;
+	case 'TP2': document.forms['tper'].tp2.value=dob; break;
+	case 'TP3': document.forms['tper'].tp3.value=dob; break;
+	case 'TP4': document.forms['tper'].tp4.value=dob; break;
+	case 'TP5': document.forms['tper'].tp5.value=dob; break;
+	default:                                          break;
+	}
+}
+
+function init()  //make sure browser supports populating select boxes
+{
+	var box1 = document.forms['tper'].tps;
+	box1.options.length = 0;
+
+	var opt = new Option("Select TP", "");
+	box1.options.add(opt);	
+
+	for(i in turnPts){ // fill trigraph box with txt codes 
+                opt =  new Option(turnPts[i].code, turnPts[i].code);
+		box1.options.add(opt);
+	} 
+
+	if(window.opener.TParray[0] != null){
+		document.forms['tper'].tp1.value = window.opener.TParray[0];
+	}
+	if(window.opener.TParray[1] != null){
+		document.forms['tper'].tp2.value = window.opener.TParray[1];
+	}
+	if(window.opener.TParray[2] != null){
+		document.forms['tper'].tp3.value = window.opener.TParray[2];
+	}
+	if(window.opener.TParray[3] != null){
+		document.forms['tper'].tp4.value = window.opener.TParray[3];
+	}
+	if(window.opener.TParray[4] != null){
+		document.forms['tper'].tp5.value = window.opener.TParray[4];
+	}
+	if(window.opener.TParray[5] != null){
+		document.forms['tper'].tp6.value = window.opener.TParray[5];
+	}
+}
+
+
+</SCRIPT>
+
+<TITLE>UK RASP Specify Task</TITLE>
+</HEAD>
+<BODY onload=init();>
+	<DIV align=center>
+		<p>
+			<B><FONT size=+2>Specify Task</FONT></B>
+		</p>
+		<p align="center">
+			Select data from drop down boxes.
+			<br>
+			TPs can be entered manually
+			<br>
+			Press 'DONE' when finished
+		</p>
+	</DIV>
+	<BR>
+
+<FORM id=1 name=tper>
+	<TABLE align=center cellSpacing=0 cellPadding=0 width="20%" bgColor=#ff8800 border=1>
+		<TBODY>
+			<TR>
+				<TD vAlign=top align=left width="6%">Select TP #:     </TD>
+				<TD vAlign=top align=left width="6%">Select Trigraph: </TD>
+				<TD vAlign=bottom align=middle width="4%">TP1:        </TD>
+				<TD vAlign=bottom align=middle width="4%">TP2:        </TD>
+				<TD vAlign=bottom align=middle width="4%">TP3:        </TD>
+				<TD vAlign=bottom align=middle width="4%">TP4:        </TD>
+				<TD vAlign=bottom align=middle width="4%">TP5:        </TD>
+				<TD vAlign=bottom align=middle width="4%">TP6:        </TD>
+				<TD vAlign=center align=middle>
+					<button onclick="resetTask();">Clear</button>
+				</TD>
+			</TR>
+			<TR>
+				<TD>
+					<SELECT onchange=setTP2(this.options[this.selectedIndex].text) name=seltp> 
+					<OPTION value=0 selected>-</OPTION>
+					<OPTION value=TP1>TP1</OPTION> 
+					<OPTION value=TP2>TP2</OPTION>
+					<OPTION value=TP3>TP3</OPTION>
+					<OPTION value=TP4>TP4</OPTION>
+					<OPTION value=TP5>TP5</OPTION>
+					<OPTION value=TP6>TP6</OPTION>
+					</SELECT> 
+				</TD>
+				<TD vAlign=center align=middle width="4%">
+					<SELECT onchange=setTP1(this.options[this.selectedIndex].text) name=tps>
+					<OPTION value=0 selected>TP LOAD</OPTION>
+					</SELECT>
+				</TD>
+				<TD vAlign=center align=middle>
+					<INPUT style="TEXT-TRANSFORM: uppercase" maxLength=3 size=3 name=tp1> 
+				</TD>
+				<TD vAlign=center align=middle>
+					<INPUT style="TEXT-TRANSFORM: uppercase" maxLength=3 size=3 name=tp2> 
+				</TD>
+				<TD vAlign=center align=middle>
+					<INPUT style="TEXT-TRANSFORM: uppercase" maxLength=3 size=3 name=tp3> 
+				</TD>
+				<TD vAlign=center align=middle>
+					<INPUT style="TEXT-TRANSFORM: uppercase" maxLength=3 size=3 name=tp4>
+				</TD>
+				<TD vAlign=center align=middle>
+					<INPUT style="TEXT-TRANSFORM: uppercase" maxLength=3 size=3 name=tp5>
+				</TD>
+				<TD vAlign=center align=middle>
+					<INPUT style="TEXT-TRANSFORM: uppercase" maxLength=3 size=3 name=tp6>
+				</TD>
+				<TD vAlign=center align=middle>
+					<button onclick="calcAll();">DONE</button>
+				</TD>
+			</TR>
+		</TBODY>
+	</TABLE>
+
+		<br>
+		<DIV class=testclass id=tpzz> </DIV>
+		<br>
+</FORM>
+</BODY>
+</HTML>
