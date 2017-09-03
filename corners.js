@@ -19,6 +19,11 @@ corners.Bounds[6] = new google.maps.LatLngBounds(
     );
 corners.Centre[6] = new google.maps.LatLng(44.0941086, 0.8699951);
 
+corners.Bounds[3] = new google.maps.LatLngBounds(
+        new google.maps.LatLng(41.5455666, -3.2279358), // SW
+        new google.maps.LatLng(45.7934761, 4.5046692)  // NE
+    );
+    corners.Centre[3] = new google.maps.LatLng(43.6695213, 0.6383667);
 
 /*// UK 2km (Today)
 corners.Bounds[2] = new google.maps.LatLngBounds(

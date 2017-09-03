@@ -761,14 +761,10 @@ function getResolution()
 	}
 	else {
 		switch( document.getElementById("Day").options.selectedIndex){
-		case 0:	return( 6);	break;  // Today    - 2Km
-		case 1: return( 6);	break;  // Today    - 4Km
-		case 2: return( 6);	break;  // Tomorrow - 4Km
-		case 3:                     // Rest of week - 12Km
-		case 4:
-		case 5:
-		case 6:
-		case 7: return(12); break;
+		case 0:	return( 3);	break;  // Today          - 3Km
+		case 1: return( 6);	break;  // Tomorrow       - 3Km
+    case 2:											// Two days after - 6km
+		case 3: return( 6);	break;
 		default:
 			alert("getResolution: Unknown Day Index!");
 			return(12);	// What else?
