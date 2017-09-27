@@ -22,7 +22,12 @@ begin
   a = addfiles("wrf.nc","r")
 
   times = wrf_user_list_times(a)         ; "2008-09-29_18:30:00", etc
-  tk2   = wrf_user_getvar(a,"T2",-1)     ; T2 in Kelvin
+  ua   = wrf_user_getvar(a,"ua",-1)     ; ua en ua (unité absolue)
+  va   = wrf_user_getvar(a,"va",-1)     ; ua en ua (unité absolue)
+  z   = wrf_user_getvar(a,"z",-1)     ; ua en ua (unité absolue)
+  nalt = dimsizes(z)
+
+  ;print(z)
 
   times  = wrf_user_list_times(a)
   ntimes = dimsizes(times)
@@ -38,7 +43,7 @@ begin
 ;---Set up CSV file and header information for the file
   csv_filename = "wrf_2m_temperature.csv"
   system("rm -f " + csv_filename)                ; Remove file in case it exists.
-  fields = (/"TIME", "LAT", "LON", "TEMPERATURE (degC)"/)
+  fields = (/"TIME", "LAT", "LON", "UA (en UA)", "VA","Altitude"/)
 
 ;---Create a header line for CSV file
   dq     = str_get_dq()
@@ -51,25 +56,23 @@ begin
 ; format string:
 ;     format = "%s,%g,%g,%g"
 ; 
-format = "%s,%6.2f,%7.2f,%6.2f"
+format = "%s,%6.2f,%7.2f,%6.2f,%6.2f,%6.2f"
 
 ;
 ; Loop through each time step and desired list of lat/lon values,
 ; and write a single line of data to CSV file.
 ;
+print(a[0]->XLAT)
   write_table(csv_filename, "w", header, "%s")   ; Write header to CSV file.
   do it = 0,ntimes-1
     do nl = 0,nlatlon-1
       nln   = loc(0,nl)
       nlt   = loc(1,nl)
-      print(nl)
-	  print("############")
-	  print(nlt)
-	  print("############")
-      print(nln)
+      ;print(ua)
       lat1  = a[0]->XLAT(0,nlt,nln)    ; nearest grid point
       lon1  = a[0]->XLONG(0,nlt,nln)
-      alist = [/times(it),lat1,lon1,tk2(it,nlt,nln)/]   ; Store data to be written in a list.
+	  ; Store data to be written in a list.
+      alist = [/times(it),lat1,lon1,ua(it,0,nlt,nln),va(it,0,nlt,nln),z(it,0,nlt,nln)/]   
       write_table(csv_filename, "a", alist, format)     ; Write list to CSV file.
     end do
   end do
