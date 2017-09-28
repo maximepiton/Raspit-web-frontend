@@ -19,7 +19,8 @@ begin
   ;dir   = "./"
   ;files = systemfunc (" ls -1 " + dir + "wrfout_d01_2008-09* ")
   ;a     = addfiles(files+".nc","r")
-  a = addfiles("wrf.nc","r")
+  
+  a = addfiles(filename,"r")
 
   times = wrf_user_list_times(a)         ; "2008-09-29_18:30:00", etc
   ua   = wrf_user_getvar(a,"ua",-1)     ; ua en ua (unité absolue)
