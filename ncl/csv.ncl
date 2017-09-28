@@ -36,11 +36,17 @@ begin
   print("ntimes = " + ntimes)
 
 ;---Calculate i,j locations of data closest to set of lat/lon points
-  lats = (/ 41, 42, 43/)
-  lons = (/-1,0,1/)
+  ;lats = (/ 41, 42, 43/)
+  ;lons = (/-1,0,1/)
+  ;lats = (/41/)
+  ;lons = (/-1/)
+  lats = lat
+  lons = lon
   nlatlon = dimsizes(lats)
+	print("nlatlon = " + nlatlon)
   loc = wrf_user_ll_to_ij(a, lons, lats, True)   ; 2 x nlatnlon
-  loc = loc - 1                                  ; NCL wants values from 0 to n-1
+  loc = loc- 1                                  ; NCL wants values from 0 to n-1
+  print(loc)
 
 ;---Set up CSV file and header information for the file
   csv_filename = "ua_va_fnct_alt.csv"
@@ -68,8 +74,8 @@ format = "%s,%6.2f,%7.2f,%6.2f,%6.2f,%6.2f"
   do it = 0,ntimes-1 ; Loop over Time
     do nl = 0,nlatlon-1 ; Loop over Points
 	do nz = 0,nalt-1 ; Loop over altitude
-	nln   = loc(0,nl)
-	nlt   = loc(1,nl)
+	nln   = loc(0)
+	nlt   = loc(1)
 	;print(ua)
 	lat1  = a[0]->XLAT(0,nlt,nln)    ; nearest grid point
 	lon1  = a[0]->XLONG(0,nlt,nln)
