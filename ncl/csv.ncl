@@ -25,9 +25,11 @@ begin
   ua   = wrf_user_getvar(a,"ua",-1)     ; ua en ua (unité absolue)
   va   = wrf_user_getvar(a,"va",-1)     ; ua en ua (unité absolue)
   z   = wrf_user_getvar(a,"z",-1)     ; ua en ua (unité absolue)
-  nalt = dimsizes(z)
+  nalt = dimsizes(z(0,:,0,0))
+	print("nalt === " + nalt)
 
-  ;print(z)
+
+
 
   times  = wrf_user_list_times(a)
   ntimes = dimsizes(times)
@@ -41,7 +43,7 @@ begin
   loc = loc - 1                                  ; NCL wants values from 0 to n-1
 
 ;---Set up CSV file and header information for the file
-  csv_filename = "wrf_2m_temperature.csv"
+  csv_filename = "ua_va_fnct_alt.csv"
   system("rm -f " + csv_filename)                ; Remove file in case it exists.
   fields = (/"TIME", "LAT", "LON", "UA (en UA)", "VA","Altitude"/)
 
@@ -62,18 +64,19 @@ format = "%s,%6.2f,%7.2f,%6.2f,%6.2f,%6.2f"
 ; Loop through each time step and desired list of lat/lon values,
 ; and write a single line of data to CSV file.
 ;
-print(a[0]->XLAT)
   write_table(csv_filename, "w", header, "%s")   ; Write header to CSV file.
-  do it = 0,ntimes-1
-    do nl = 0,nlatlon-1
-      nln   = loc(0,nl)
-      nlt   = loc(1,nl)
-      ;print(ua)
-      lat1  = a[0]->XLAT(0,nlt,nln)    ; nearest grid point
-      lon1  = a[0]->XLONG(0,nlt,nln)
-	  ; Store data to be written in a list.
-      alist = [/times(it),lat1,lon1,ua(it,0,nlt,nln),va(it,0,nlt,nln),z(it,0,nlt,nln)/]   
-      write_table(csv_filename, "a", alist, format)     ; Write list to CSV file.
+  do it = 0,ntimes-1 ; Loop over Time
+    do nl = 0,nlatlon-1 ; Loop over Points
+	do nz = 0,nalt-1 ; Loop over altitude
+	nln   = loc(0,nl)
+	nlt   = loc(1,nl)
+	;print(ua)
+	lat1  = a[0]->XLAT(0,nlt,nln)    ; nearest grid point
+	lon1  = a[0]->XLONG(0,nlt,nln)
+	; Store data to be written in a list.
+	alist = [/times(it),lat1,lon1,ua(it,nz,nlt,nln),va(it,nz,nlt,nln),z(it,nz,nlt,nln)/]   
+	write_table(csv_filename, "a", alist, format)     ; Write list to CSV file.
+      end do
     end do
   end do
 end
