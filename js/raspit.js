@@ -1,5 +1,7 @@
 var metaparam_buttons_with_menu = ['wind','thermals','clouds'];
 var params = ['sfcwind', 'hbl', 'dbl', 'blwindshear', 'blcloudpct', 'zsfclclmask', 'zblclmask'];
+var param_descriptions = {'sfcwind':'Vent à 10m', 'hbl':'Altitude plafond', 'dbl':'Epaisseur couche convective', 'blcloudpct':'Couverture nuageuse au plafond',
+                        'zsfclclmask':'Potentiel de formation de cumulus', 'zblclmask':'Potentiel de surdéveloppement'};
 
 function toggle_metaparam_menu(e) {
     $( "#menu_".concat( e.data.metaparam )).animate({width: 'toggle'}, 200);
@@ -10,6 +12,7 @@ function switch_previ_layer(e) {
     map.removeLayer(previ_layer)
     previ_layer = new L.ImageOverlay('20170920/'.concat(e.data.param,'.curr.1700lst.d2.body.png'), imageBounds, {opacity: 0.5});
     map.addLayer(previ_layer);
+    $('#site_title').text(param_descriptions[e.data.param]);
 }
 
 var map = L.map('map');
@@ -20,13 +23,12 @@ L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: 'Map data &copy; OpenStreetMap contributors'
 }).addTo(map);
 
-var imageUrl = '20170920/blcloudpct.curr.1700lst.d2.body.png',
-  imageBounds = [[41.9054527, -3.0687866], [46.2827644, 4.8087769]];
-//  L.imageOverlay(imageUrl, imageBounds, {opacity: 0.5}).addTo(map);
-var previ_layer = new L.ImageOverlay('20170920/blcloudpct.curr.1700lst.d2.body.png', imageBounds, {opacity: 0.5});
+var initial_param = 'hbl';
+var imageUrl = '20170920/'.concat(initial_param,'.curr.1700lst.d2.body.png');
+var imageBounds = [[41.9054527, -3.0687866], [46.2827644, 4.8087769]];
+var previ_layer = new L.ImageOverlay(imageUrl, imageBounds, {opacity: 0.5});
 map.addLayer(previ_layer);
-
-var marker = L.marker([51.2, 7]).addTo(map);
+$('#site_title').text(param_descriptions[initial_param]);
 
 var sidebar = L.control.sidebar('sidebar').addTo(map);
 
@@ -39,7 +41,3 @@ for (var i = 0; i < metaparam_buttons_with_menu.length; i++) {
 for (var i = 0; i < params.length; i++) {
     $( "#".concat(params[i]) ).click({param:params[i]},switch_previ_layer);
 }
-
-/*$( "#sfcwind" ).click(function() {
-    switch_previ_layer('sfcwind');
-});*/
