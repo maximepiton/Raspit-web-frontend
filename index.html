@@ -15,64 +15,8 @@
 			  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
 			  crossorigin="anonymous"></script>
     <link rel="stylesheet" href="css/leaflet-sidebar.css" />
+    <link rel="stylesheet" href="css/raspit.css" />
 
-    <style>
-        body {
-            padding: 0;
-            margin: 0;
-        }
-
-        html, body, #map {
-            height: 100%;
-            font: 10pt "Helvetica Neue", Arial, Helvetica, sans-serif;
-        }
-
-        .lorem {
-            font-style: italic;
-            color: #AAA;
-        }
-
-        .mymenu {
-          position: absolute;
-          overflow: hidden;
-          z-index: 2000;
-          box-shadow: 0 1px 5px rgba(0, 0, 0, 0.65);
-          background-color: white;
-          border-radius: 4px;
-          height: 35px;
-          vertical-align: middle;
-          top: 50px;
-          left: 55px;
-          line-height: 32px;
-          padding-right: 1em;
-         }
-
-         .menu_item_wind, .menu_item_clouds, .menu_item_thermals {
-           color: black;
-           padding-left: 1em;
-         }
-
-         .menu_item_wind:hover, .menu_item_clouds:hover, .menu_item_thermals:hover {
-           color: grey;
-         }
-
-         a:hover, a:visited, a:link, a:active {
-           text-decoration: none;
-         }
-
-         #menu_thermals {
-           top: 90px;
-         }
-
-         #menu_clouds {
-          top:130px;
-         }
-
-        .not-active {
-            pointer-events: none;
-            cursor: default;
-        }
-    </style>
 </head>
 <body>
     <div id="menu_wind" class="mymenu" style="display:none">
@@ -109,45 +53,11 @@
                 <li><a href="#" role="tab" id="btn_wind"><i class="icon-feather-weather-wind"></i></a></li>
                 <li><a href="#" role="tab" id="btn_thermals"><i class="icon-rocket"></i></a></li>
                 <li><a href="#" role="tab" id="btn_clouds"><i class="icon-cloud"></i></a></li>
-                <!--<li><a href="#settings" role="tab"><i class="icon-cloud"></i></a></li>
-                <li class="disabled"><a href="#messages" role="tab"><i class="fa fa-envelope"></i></a></li> -->
             </ul>
 
             <ul role="tablist">
                 <li><a href="#settings" role="tab"><i class="fa fa-gear"></i></a></li>
             </ul>
-        </div>
-
-        <!-- Tab panes -->
-        <div class="sidebar-content">
-            <div class="sidebar-pane" id="home">
-                <h1 class="sidebar-header">
-                    sidebar-v2
-                    <span class="sidebar-close"><i class="fa fa-caret-left"></i></span>
-                </h1>
-
-                <p>A responsive sidebar for mapping libraries like <a href="http://leafletjs.com/">Leaflet</a> or <a href="http://openlayers.org/">OpenLayers</a>.</p>
-
-                <p class="lorem">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
-
-                <p class="lorem">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
-
-                <p class="lorem">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
-
-                <p class="lorem">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
-            </div>
-
-            <div class="sidebar-pane" id="profile">
-                <h1 class="sidebar-header">Profile<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
-            </div>
-
-            <div class="sidebar-pane" id="messages">
-                <h1 class="sidebar-header">Messages<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
-            </div>
-
-            <div class="sidebar-pane" id="settings">
-                <h1 class="sidebar-header">Settings<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
-            </div>
         </div>
     </div>
 
@@ -155,53 +65,7 @@
 
     <script src="https://unpkg.com/leaflet@1.0.1/dist/leaflet.js"></script>
     <script src="js/leaflet-sidebar.js"></script>
+    <script src="js/raspit.js"></script>
 
-    <script>
-        var metaparam_buttons_with_menu = ['wind','thermals','clouds'];
-        var params = ['sfcwind', 'hbl', 'dbl', 'blwindshear', 'blcloudpct', 'zsfclclmask', 'zblclmask'];
-
-        function toggle_metaparam_menu(e) {
-            $( "#menu_".concat( e.data.metaparam )).animate({width: 'toggle'}, 200);
-            console.log("#menu_".concat( e.data.metaparam));
-        }
-
-        function switch_previ_layer(e) {
-            map.removeLayer(previ_layer)
-            previ_layer = new L.ImageOverlay('20170920/'.concat(e.data.param,'.curr.1700lst.d2.body.png'), imageBounds, {opacity: 0.5});
-            map.addLayer(previ_layer);
-        }
-
-        var map = L.map('map');
-        map.setView([44.0941086, 0.8699951], 7);
-
-        L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 18,
-            attribution: 'Map data &copy; OpenStreetMap contributors'
-        }).addTo(map);
-
-        var imageUrl = '20170920/blcloudpct.curr.1700lst.d2.body.png',
-          imageBounds = [[41.9054527, -3.0687866], [46.2827644, 4.8087769]];
-        //  L.imageOverlay(imageUrl, imageBounds, {opacity: 0.5}).addTo(map);
-        var previ_layer = new L.ImageOverlay('20170920/blcloudpct.curr.1700lst.d2.body.png', imageBounds, {opacity: 0.5});
-        map.addLayer(previ_layer);
-
-        var marker = L.marker([51.2, 7]).addTo(map);
-
-        var sidebar = L.control.sidebar('sidebar').addTo(map);
-
-        // Make menu bindings : on click, toggles the corresponding menu
-        for (var i = 0; i < metaparam_buttons_with_menu.length; i++) {
-            $( "#btn_".concat(metaparam_buttons_with_menu[i]) ).click({metaparam:metaparam_buttons_with_menu[i]},toggle_metaparam_menu);
-            $( "#menu_".concat(metaparam_buttons_with_menu[i]) ).click({metaparam:metaparam_buttons_with_menu[i]},toggle_metaparam_menu);
-        }
-
-        for (var i = 0; i < params.length; i++) {
-            $( "#".concat(params[i]) ).click({param:params[i]},switch_previ_layer);
-        }
-
-        /*$( "#sfcwind" ).click(function() {
-            switch_previ_layer('sfcwind');
-        });*/
-    </script>
 </body>
 </html>

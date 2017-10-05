@@ -1,0 +1,55 @@
+body {
+    padding: 0;
+    margin: 0;
+}
+
+html, body, #map {
+    height: 100%;
+    font: 10pt "Helvetica Neue", Arial, Helvetica, sans-serif;
+}
+
+.lorem {
+    font-style: italic;
+    color: #AAA;
+}
+
+.mymenu {
+  position: absolute;
+  overflow: hidden;
+  z-index: 2000;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.65);
+  background-color: white;
+  border-radius: 4px;
+  height: 35px;
+  vertical-align: middle;
+  top: 50px;
+  left: 55px;
+  line-height: 32px;
+  padding-right: 1em;
+ }
+
+ .menu_item_wind, .menu_item_clouds, .menu_item_thermals {
+   color: black;
+   padding-left: 1em;
+ }
+
+ .menu_item_wind:hover, .menu_item_clouds:hover, .menu_item_thermals:hover {
+   color: grey;
+ }
+
+ a:hover, a:visited, a:link, a:active {
+   text-decoration: none;
+ }
+
+ #menu_thermals {
+   top: 90px;
+ }
+
+ #menu_clouds {
+  top:130px;
+ }
+
+.not-active {
+    pointer-events: none;
+    cursor: default;
+}
