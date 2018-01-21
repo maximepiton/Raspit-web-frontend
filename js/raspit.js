@@ -3,14 +3,30 @@ var params = ['sfcwind', 'hbl', 'dbl', 'blwindshear', 'blcloudpct', 'zsfclclmask
 var param_descriptions = {'sfcwind':'Vent à 10m', 'hbl':'Altitude plafond', 'dbl':'Epaisseur couche convective', 'blcloudpct':'Couverture nuageuse au plafond',
                         'zsfclclmask':'Potentiel de formation de cumulus', 'zblclmask':'Potentiel de surdéveloppement'};
 
+function two_digits(number) {
+    return (number < 10 ? '0' : '') + number;                    
+}
+
 function toggle_metaparam_menu(e) {
     $( "#menu_".concat( e.data.metaparam )).animate({width: 'toggle'}, 200);
     console.log("#menu_".concat( e.data.metaparam));
 }
 
+function get_prevision_image(param, date_and_time) {
+    return "https://storage.googleapis.com/raspit-output-data/".concat(date_and_time.getFullYear(),
+        two_digits(date_and_time.getMonth() + 1),
+        two_digits(date_and_time.getDate() + 2),
+        '/OUT/',
+        param,
+        '.curr.',
+        date_and_time.getHours(),
+        '00lst.d2.body.png');
+}
+
 function switch_previ_layer(e) {
     map.removeLayer(previ_layer)
-    previ_layer = new L.ImageOverlay('20170920/'.concat(e.data.param,'.curr.1700lst.d2.body.png'), imageBounds, {opacity: 0.5});
+    console.log("getting ".concat(get_prevision_image(e.data.param, new Date())));
+    previ_layer = new L.ImageOverlay(get_prevision_image(e.data.param, new Date()), imageBounds, {opacity: 0.5});
     map.addLayer(previ_layer);
     $('#site_title').text(param_descriptions[e.data.param]);
 }
@@ -29,9 +45,8 @@ L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map
 }).addTo(map);
 
 var initial_param = 'hbl';
-var imageUrl = '20170920/'.concat(initial_param,'.curr.1700lst.d2.body.png');
 var imageBounds = [[41.9054527, -3.0687866], [46.2827644, 4.8087769]];
-var previ_layer = new L.ImageOverlay(imageUrl, imageBounds, {opacity: 0.5});
+var previ_layer = new L.ImageOverlay(get_prevision_image(initial_param, new Date()), imageBounds, {opacity: 0.5});
 map.addLayer(previ_layer);
 $('#site_title').text(param_descriptions[initial_param]);
 
