@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css" />
     <!--<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">-->
     <!--[if lte IE 8]><link rel="stylesheet" href="//cdn.leafletjs.com/leaflet-0.7.2/leaflet.ie.css" /><![endif]-->
     <link href="https://file.myfontastic.com/7Kc3dnJcruCJ6bqqGeLMgT/icons.css" rel="stylesheet">
@@ -22,7 +22,7 @@
     <div id="site_title"></div>
     <div id="menu_wind" class="mymenu" style="display:none">
       <a class="menu_item_wind" href="#" id="sfcwind">10m</a>
-      <a class="menu_item_wind not-active" href="#">500m</a>
+      <a class="menu_item_wind" href="#" id="500mwind">500m</a>
       <a class="menu_item_wind not-active" href="#">1000m</a>
       <a class="menu_item_wind not-active" href="#">1500m</a>
       <a class="menu_item_wind not-active" href="#">2000m</a>
@@ -64,8 +64,10 @@
 
     <div id="map" class="sidebar-map"></div>
 
-    <script src="https://unpkg.com/leaflet@1.0.1/dist/leaflet.js"></script>
+    <script src="js/data.js"></script>
+    <script src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js"></script>
     <script src="js/leaflet-sidebar.js"></script>
+    <script src="js/leaflet-velocity.js"></script>
     <script src="js/raspit.js"></script>
 
 </body>

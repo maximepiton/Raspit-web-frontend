@@ -1,7 +1,12 @@
 var metaparam_buttons_with_menu = ['wind','thermals','clouds'];
-var params = ['sfcwind', 'hbl', 'dbl', 'blwindshear', 'blcloudpct', 'zsfclclmask', 'zblclmask'];
-var param_descriptions = {'sfcwind':'Vent à 10m', 'hbl':'Altitude plafond', 'dbl':'Epaisseur couche convective', 'blcloudpct':'Couverture nuageuse au plafond',
-                        'zsfclclmask':'Potentiel de formation de cumulus', 'zblclmask':'Potentiel de surdéveloppement'};
+var params = ['sfcwind', '500mwind', 'hbl', 'dbl', 'blwindshear', 'blcloudpct', 'zsfclclmask', 'zblclmask'];
+var param_descriptions = {'sfcwind':'Vent à 10m',
+                          '500mwind':'Vent à 500m',
+                          'hbl':'Altitude plafond',
+                          'dbl':'Epaisseur couche convective',
+                          'blcloudpct':'Couverture nuageuse au plafond',
+                          'zsfclclmask':'Potentiel de formation de cumulus',
+                          'zblclmask':'Potentiel de surdéveloppement'};
 
 function two_digits(number) {
     return (number < 10 ? '0' : '') + number;                    
@@ -24,9 +29,33 @@ function get_prevision_image(param, date_and_time) {
 }
 
 function switch_previ_layer(e) {
-    map.removeLayer(previ_layer)
-    console.log("getting ".concat(get_prevision_image(e.data.param, new Date())));
-    previ_layer = new L.ImageOverlay(get_prevision_image(e.data.param, new Date()), imageBounds, {opacity: 0.5});
+    map.removeLayer(previ_layer);
+    if (wind_layer != null) {
+        map.removeLayer(wind_layer);
+    }
+    if (e.data.param == '500mwind') {
+        wind_layer = new L.velocityLayer({
+            displayValues: true,
+            displayOptions: {
+              velocityType: 'GBR Wind',
+              position: 'bottomleft',
+              emptyString: 'No velocity data',
+              angleConvention: 'bearingCW',
+              displayPosition: 'bottomleft',
+              displayEmptyString: 'No velocity data',
+              speedUnit: 'kt'
+            },
+            data: data,
+          
+            // OPTIONAL
+            //minVelocity: 0,          // used to align color scale
+            maxVelocity: 5
+          });
+          map.addLayer(wind_layer);
+    } else {
+        console.log("getting ".concat(get_prevision_image(e.data.param, new Date())));
+        previ_layer = new L.ImageOverlay(get_prevision_image(e.data.param, new Date()), imageBounds, {opacity: 0.5});
+    }
     map.addLayer(previ_layer);
     $('#site_title').text(param_descriptions[e.data.param]);
 }
@@ -46,6 +75,7 @@ L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map
 
 var initial_param = 'hbl';
 var imageBounds = [[41.9054527, -3.0687866], [46.2827644, 4.8087769]];
+var wind_layer;
 var previ_layer = new L.ImageOverlay(get_prevision_image(initial_param, new Date()), imageBounds, {opacity: 0.5});
 map.addLayer(previ_layer);
 $('#site_title').text(param_descriptions[initial_param]);
